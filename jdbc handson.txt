@@ -1,0 +1,230 @@
+JDBC HANDSON
+1
+package com.day15;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
+
+public class Example4 {
+
+	public static void main(String[] args) {
+		Scanner s=new Scanner(System.in);
+		System.out.println("##########Product information");
+		int choice;
+		do {
+			System.out.println("1.Insert Product");
+			System.out.println("2.update Product");
+			System.out.println("3.Delete Product");
+			System.out.println("4.Select Product");
+			System.out.println("5. Exit");
+			System.out.println("Enter the choice");
+			choice=Integer.parseInt(s.nextLine());
+			switch(choice) {
+			case 1:
+				System.out.println("Enter Product name");
+				String name=s.nextLine();
+				System.out.println("Enter Product brand");
+				String brand=s.nextLine();
+				System.out.println("Enter Product price");
+				double price=Double.parseDouble(s.nextLine());
+				System.out.println("enter product quantity");
+				int qnt=Integer.parseInt(s.nextLine());
+				Random r=new Random();
+				int pid=r.nextInt(99999)+10000;
+				Connection con=null;
+				try {
+					 con=ConnectionUtil.getConnection();
+					PreparedStatement ps=con.prepareStatement("insert into Product values(?,?,?,?,?)");
+					ps.setInt(1, pid);
+					ps.setString(2,name);
+					ps.setString(3, brand);
+					ps.setDouble(4, price);
+					ps.setInt(5, qnt);
+					int no_of_Rows=ps.executeUpdate();
+					if(no_of_Rows==1)
+						System.out.println("Product Record inserted successfully");
+					}
+				catch(Exception e) {
+					System.out.println(e);
+					}
+				finally {
+					if(con!=null)
+						try {
+							con.close();
+						}catch(SQLException e) {
+							e.printStackTrace();
+						}
+					}
+				break;
+			case 2:
+				System.out.println("Enter Product id");
+				int pdid=Integer.parseInt(s.nextLine());
+				System.out.println("Enter new product name");
+				String pname=s.nextLine();
+				System.out.println("Enter new Product brand");
+				String pbrand=s.nextLine();
+				System.out.println("Enter new product price");
+				double pprice=Double.parseDouble(s.nextLine());
+				System.out.println("Enter new product quantity");
+				int pqnt=Integer.parseInt(s.nextLine());
+				Connection con1=null;
+				try {
+					con1=ConnectionUtil.getConnection();
+					PreparedStatement ps1=con1.prepareStatement("update product set pname=?,pbrand=?,pprice=?,pqnt=? where pdid=?");
+					ps1.setString(1,pname);
+					ps1.setString(2,pbrand);
+					ps1.setDouble(3, pprice);
+					ps1.setInt(4, pqnt);
+					ps1.setInt(5, pdid);
+					int rows=ps1.executeUpdate();
+					if(rows==1) {
+						System.out.println("Product record updated successfully");
+					}
+					
+				}catch(Exception e) {
+					System.out.println(e);
+				}
+				finally {
+					if(con1!=null)
+						try {
+							con1.close();
+						}catch(SQLException e) {
+							e.printStackTrace();
+						}
+					}
+				
+				break;
+			case 3:
+				System.out.println("Enter product id");
+				int pd_id=Integer.parseInt(s.nextLine());
+				Connection con2=null;
+				try {
+					con2=ConnectionUtil.getConnection();
+					PreparedStatement ps2=con2.prepareStatement("delete from product where pid=?");
+					ps2.setInt(1, pd_id);
+					int deletedRow=ps2.executeUpdate();
+					if(deletedRow==1)
+						System.out.println("product Record deleted successfully");
+				}catch(Exception e) {
+					
+				}finally {
+					if(con2!=null)
+						try {
+							con2.close();
+						}catch(SQLException e) {
+							e.printStackTrace();
+						}
+					}
+				
+				break;
+			case 4:
+				Connection con3=null;
+				try {
+					con3=ConnectionUtil.getConnection();
+					Statement st=con3.createStatement();
+					ResultSet rs=st.executeQuery("select * from product");
+					List<Product> l=new ArrayList<>();
+					while(rs.next()) {
+						Product p=new Product();
+						p.setId(rs.getInt(1));
+						p.setName(rs.getString(2));
+						p.setBrand(rs.getString(3));
+						p.setPrice(rs.getDouble(4));
+						p.setQuantity(rs.getInt(4));
+						l.add(p);
+						}
+					System.out.printf("%15s %20s %5s %10s %20s\n","productId","productName","product brand","product price","product quantityu");
+		               for(Product prodl:l) {
+		                   System.out.printf("%15s %20s %5s %10s %20s\n",prodl.getId(),prodl.getName(),prodl.getBrand(),prodl.getPrice(),prodl.getQuantity());
+		                   }
+				}catch(Exception e) {
+					
+				}
+				 finally {
+		               if(con3!=null)
+		                   try {
+		                       con3.close();
+		                   }catch(SQLException e) {
+		                       e.printStackTrace();
+		                   }
+		               }
+		           
+		           break;
+			case 5:
+				  System.exit(0);
+		           break;
+		           }
+		   }
+		   while(choice<5);
+
+				
+			}
+			
+		
+	}
+
+
+PRODUCT
+package com.day15;
+
+public class Product {
+	private int id;
+	private String name;
+	private String brand;
+	private double price;
+	private int quantity;
+	public Product(int id, String name, String brand, double price, int quantity) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.brand = brand;
+		this.price = price;
+		this.quantity = quantity;
+	}
+	public Product() {
+		super();
+		
+	}
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getBrand() {
+		return brand;
+	}
+	public void setBrand(String brand) {
+		this.brand = brand;
+	}
+	public double getPrice() {
+		return price;
+	}
+	public void setPrice(double price) {
+		this.price = price;
+	}
+	public int getQuantity() {
+		return quantity;
+	}
+	public void setQuantity(int quantity) {
+		this.quantity = quantity;
+	}
+	
+	
+	
+
+}
